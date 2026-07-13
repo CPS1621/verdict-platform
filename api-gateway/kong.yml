@@ -1,0 +1,9 @@
+_format_version: "3.0"
+
+services:
+  - name: backend-service
+    url: http://host.docker.internal:8000
+    routes:
+      - name: backend-route
+        paths:
+          - /api

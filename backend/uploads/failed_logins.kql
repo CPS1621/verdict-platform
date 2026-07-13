@@ -1,0 +1,3 @@
+SecurityEvent
+| where EventID == 4625
+| summarize FailedLogins = count() by Account

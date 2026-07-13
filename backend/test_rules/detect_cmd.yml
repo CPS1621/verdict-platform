@@ -1,0 +1,20 @@
+title: Detect CMD Execution
+id: 67890
+status: stable
+
+description: Detects suspicious CMD execution
+
+author: Chaitra
+
+date: 2026-07-10
+
+logsource:
+  product: windows
+  service: sysmon
+
+detection:
+  selection:
+    Image: "*cmd.exe"
+  condition: selection
+
+level: medium
