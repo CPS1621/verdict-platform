@@ -2,6 +2,34 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Verdict Event",
   "type": "object",
-  "properties": {},
-  "required": []
+
+  "properties": {
+    "rule_id": {
+      "type": "integer"
+    },
+    "rule_name": {
+      "type": "string"
+    },
+    "verdict": {
+      "type": "string"
+    },
+    "event_data": {
+      "type": "object"
+    },
+    "verdict_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+
+  "required": [
+    "rule_id",
+    "rule_name",
+    "verdict",
+    "event_data",
+    "verdict_hash",
+    "created_at"
+  ]
 }

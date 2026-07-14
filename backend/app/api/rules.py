@@ -12,6 +12,8 @@ from app.schemas.rule import RuleCreate, RuleUpdate, RuleResponse
 from app.services.rule_parser import parse_rule
 from app.schemas.validator import ValidationRequest
 from app.services.validator_service import validate_rule
+from app.models.verdict_event import VerdictEvent
+from app.schemas.verdict import VerdictResponse
 import hashlib
 
 from app.models.verdict_event import VerdictEvent

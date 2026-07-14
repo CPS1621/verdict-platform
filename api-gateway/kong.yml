@@ -2,8 +2,31 @@ _format_version: "3.0"
 
 services:
   - name: backend-service
-    url: http://host.docker.internal:8000
+    url: http://host.docker.internal:8033
+
     routes:
-      - name: backend-route
+      - name: root-route
         paths:
-          - /api
+          - /
+        methods:
+          - GET
+
+      - name: health-route
+        paths:
+          - /health
+        strip_path: false
+
+      - name: users-route
+        paths:
+          - /users
+        strip_path: false
+
+      - name: rules-route
+        paths:
+          - /rules
+        strip_path: false
+
+      - name: verdicts-route
+        paths:
+          - /verdicts
+        strip_path: false
