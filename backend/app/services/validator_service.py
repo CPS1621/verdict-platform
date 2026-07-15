@@ -4,23 +4,42 @@ import json
 def validate_rule(rule_query: str, event: dict):
     """
     Validates whether an event matches the Sigma detection rule.
-    Returns one of:
-    - Detected
-    - Missed
+    Returns a detailed verdict.
     """
 
     detection = json.loads(rule_query)
 
     selection = detection.get("selection", {})
 
+    matched_fields = []
+
     for key, value in selection.items():
 
         event_value = event.get(key)
 
         if event_value is None:
-            return "Missed"
+            return {
+                "status": "Missed",
+                "confidence": 0,
+                "matched_fields": matched_fields,
+                "message": f"Field '{key}' is missing."
+            }
 
-        if value.replace("*", "").lower() not in event_value.lower():
-            return "Missed"
+        expected = value.replace("*", "").lower()
 
-    return "Detected"
+        if expected not in event_value.lower():
+            return {
+                "status": "Missed",
+                "confidence": 0,
+                "matched_fields": matched_fields,
+                "message": f"Field '{key}' did not match."
+            }
+
+        matched_fields.append(key)
+
+    return {
+        "status": "Detected",
+        "confidence": 95,
+        "matched_fields": matched_fields,
+        "message": "All required fields matched."
+    }
