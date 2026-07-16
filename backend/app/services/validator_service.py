@@ -9,9 +9,11 @@ def validate_rule(rule_query: str, event: dict):
 
     detection = json.loads(rule_query)
 
-    selection = detection.get("selection", {})
+    selection = detection.get("detection", {}).get("selection", {})
 
     matched_fields = []
+
+    print("Selection:", selection)
 
     for key, value in selection.items():
 
