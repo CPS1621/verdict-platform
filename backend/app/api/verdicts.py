@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
-from app.models.verdict_event import VerdictEvent
+from app.models.verdict import Verdict
 from app.schemas.verdict import VerdictResponse
 
 router = APIRouter()
@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get("/verdicts", response_model=list[VerdictResponse])
 def get_verdicts(db: Session = Depends(get_db)):
-    verdicts = db.query(VerdictEvent).all()
+    verdicts = db.query(Verdict).all()
     return verdicts
 
 
@@ -20,8 +20,8 @@ def get_verdict(
     db: Session = Depends(get_db)
 ):
     verdict = (
-        db.query(VerdictEvent)
-        .filter(VerdictEvent.id == verdict_id)
+        db.query(Verdict)
+        .filter(Verdict.id == verdict_id)
         .first()
     )
 
@@ -40,8 +40,8 @@ def get_verdicts_by_rule(
     db: Session = Depends(get_db)
 ):
     verdicts = (
-        db.query(VerdictEvent)
-        .filter(VerdictEvent.rule_id == rule_id)
+        db.query(Verdict)
+        .filter(Verdict.rule_id == rule_id)
         .all()
     )
 

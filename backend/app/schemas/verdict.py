@@ -9,7 +9,6 @@ class VerdictResponse(BaseModel):
     rule_name: str
     verdict: str
     event_data: str
-    verdict_hash: str
     created_at: datetime
 
     class Config:
