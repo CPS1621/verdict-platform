@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
+from app.security.security import get_current_user
 
 import os
 import shutil
@@ -24,20 +25,24 @@ router = APIRouter()
 @router.post("/rules", response_model=RuleResponse)
 def create_rule(
     rule: RuleCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
     return create_rule_service(db, rule)
 
 
 @router.get("/rules", response_model=list[RuleResponse])
-def get_rules(db: Session = Depends(get_db)):
+def get_rules(db: Session = Depends(get_db),
+current_user: str = Depends(get_current_user)
+):
     return get_all_rules(db)
 
 
 @router.get("/rules/{rule_id}", response_model=RuleResponse)
 def get_rule(
     rule_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
     rule = get_rule_by_id(db, rule_id)
 
@@ -54,7 +59,8 @@ def get_rule(
 def update_rule(
     rule_id: int,
     updated_rule: RuleUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
     rule = update_rule_service(
         db,
@@ -74,7 +80,8 @@ def update_rule(
 @router.delete("/rules/{rule_id}")
 def delete_rule(
     rule_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
     deleted = delete_rule_service(
         db,
@@ -95,7 +102,8 @@ def delete_rule(
 @router.post("/rules/upload")
 def upload_rule(
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
     upload_folder = "uploads"
 
@@ -128,7 +136,8 @@ def upload_rule(
 def validate_rule_endpoint(
     rule_id: int,
     request: ValidationRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
     result = validate_uploaded_rule(
         db=db,

@@ -8,6 +8,7 @@ from app.api.rules import router as rule_router
 from app.api.verdicts import router as verdict_router
 from app.api.dashboard import router as dashboard_router
 from app.api.validator import router as validator_router
+from app.api import auth
 
 app = FastAPI(
     title="CyBreach Validator API"
@@ -22,6 +23,7 @@ app.include_router(rule_router)
 app.include_router(verdict_router)
 app.include_router(dashboard_router)
 app.include_router(validator_router)
+app.include_router(auth.router)
 
 @app.get("/")
 def root():
