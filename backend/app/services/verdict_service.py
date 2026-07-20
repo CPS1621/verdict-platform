@@ -27,3 +27,23 @@ def save_verdict(
     db.refresh(db_verdict)
 
     return db_verdict
+
+
+def get_all_verdicts(db: Session):
+    return db.query(Verdict).all()
+
+
+def get_verdict_by_id(db: Session, verdict_id: int):
+    return (
+        db.query(Verdict)
+        .filter(Verdict.id == verdict_id)
+        .first()
+    )
+
+
+def get_verdicts_by_rule(db: Session, rule_id: int):
+    return (
+        db.query(Verdict)
+        .filter(Verdict.rule_id == rule_id)
+        .all()
+    )

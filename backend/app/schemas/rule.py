@@ -7,6 +7,7 @@ class RuleCreate(BaseModel):
     severity: str
     description: str
     query: str
+    status: str
 
 
 class RuleUpdate(BaseModel):

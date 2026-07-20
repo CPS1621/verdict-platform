@@ -1,56 +1,54 @@
-from app.services.rule_service import upload_sigma_rule
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 
 import os
 import shutil
-import json
 
 from app.database.database import get_db
-from app.models.rule import Rule
 from app.schemas.rule import RuleCreate, RuleUpdate, RuleResponse
-from app.services.rule_parser import parse_rule
 from app.schemas.validator import ValidationRequest
-from app.services.validator_service import validate_rule
-from app.models.verdict_event import VerdictEvent
-from app.schemas.verdict import VerdictResponse
-import hashlib
 
-from app.models.verdict_event import VerdictEvent
+from app.services.rule_service import (
+    upload_sigma_rule,
+    get_all_rules,
+    get_rule_by_id,
+    create_rule as create_rule_service,
+    update_rule as update_rule_service,
+    delete_rule as delete_rule_service,
+    validate_uploaded_rule
+)
 
 router = APIRouter()
 
 
 @router.post("/rules", response_model=RuleResponse)
-def create_rule(rule: RuleCreate, db: Session = Depends(get_db)):
-    new_rule = Rule(
-        rule_name=rule.rule_name,
-        rule_type=rule.rule_type,
-        severity=rule.severity,
-        description=rule.description,
-        query=rule.query
-    )
-
-    db.add(new_rule)
-    db.commit()
-    db.refresh(new_rule)
-
-    return new_rule
+def create_rule(
+    rule: RuleCreate,
+    db: Session = Depends(get_db)
+):
+    return create_rule_service(db, rule)
 
 
 @router.get("/rules", response_model=list[RuleResponse])
 def get_rules(db: Session = Depends(get_db)):
-    rules = db.query(Rule).all()
-    return rules
+    return get_all_rules(db)
+
 
 @router.get("/rules/{rule_id}", response_model=RuleResponse)
-def get_rule(rule_id: int, db: Session = Depends(get_db)):
-    rule = db.query(Rule).filter(Rule.id == rule_id).first()
+def get_rule(
+    rule_id: int,
+    db: Session = Depends(get_db)
+):
+    rule = get_rule_by_id(db, rule_id)
 
     if not rule:
-        raise HTTPException(status_code=404, detail="Rule not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Rule not found"
+        )
 
     return rule
+
 
 @router.put("/rules/{rule_id}", response_model=RuleResponse)
 def update_rule(
@@ -58,36 +56,41 @@ def update_rule(
     updated_rule: RuleUpdate,
     db: Session = Depends(get_db)
 ):
-    rule = db.query(Rule).filter(Rule.id == rule_id).first()
+    rule = update_rule_service(
+        db,
+        rule_id,
+        updated_rule
+    )
 
     if not rule:
-        raise HTTPException(status_code=404, detail="Rule not found")
-
-    rule.rule_name = updated_rule.rule_name
-    rule.rule_type = updated_rule.rule_type
-    rule.severity = updated_rule.severity
-    rule.description = updated_rule.description
-    rule.query = updated_rule.query
-    rule.status = updated_rule.status
-
-    db.commit()
-    db.refresh(rule)
+        raise HTTPException(
+            status_code=404,
+            detail="Rule not found"
+        )
 
     return rule
 
+
 @router.delete("/rules/{rule_id}")
-def delete_rule(rule_id: int, db: Session = Depends(get_db)):
-    rule = db.query(Rule).filter(Rule.id == rule_id).first()
+def delete_rule(
+    rule_id: int,
+    db: Session = Depends(get_db)
+):
+    deleted = delete_rule_service(
+        db,
+        rule_id
+    )
 
-    if not rule:
-        raise HTTPException(status_code=404, detail="Rule not found")
-
-    db.delete(rule)
-    db.commit()
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="Rule not found"
+        )
 
     return {
         "message": "Rule deleted successfully"
     }
+
 
 @router.post("/rules/upload")
 def upload_rule(
@@ -98,12 +101,21 @@ def upload_rule(
 
     os.makedirs(upload_folder, exist_ok=True)
 
-    file_path = os.path.join(upload_folder, file.filename)
+    file_path = os.path.join(
+        upload_folder,
+        file.filename
+    )
 
     with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        shutil.copyfileobj(
+            file.file,
+            buffer
+        )
 
-    new_rule = upload_sigma_rule(file_path, db)
+    new_rule = upload_sigma_rule(
+        file_path,
+        db
+    )
 
     return {
         "message": "Rule uploaded and saved successfully",
@@ -111,55 +123,23 @@ def upload_rule(
         "rule_name": new_rule.rule_name
     }
 
+
 @router.post("/rules/validate/{rule_id}")
-def validate_uploaded_rule(
+def validate_rule_endpoint(
     rule_id: int,
     request: ValidationRequest,
     db: Session = Depends(get_db)
 ):
-    # Get the rule from the database
-    rule = db.query(Rule).filter(Rule.id == rule_id).first()
+    result = validate_uploaded_rule(
+        db=db,
+        rule_id=rule_id,
+        event=request.event
+    )
 
-    if not rule:
+    if not result:
         raise HTTPException(
             status_code=404,
             detail="Rule not found."
         )
 
-    # Validate the event against the rule
-    verdict = validate_rule(rule.query, request.event)
-
-    # Convert event dictionary to JSON string
-    event_json = json.dumps(request.event)
-
-    # Generate SHA-256 hash
-    hash_input = (
-        str(rule.id)
-        + rule.rule_name
-        + verdict
-        + event_json
-    )
-
-    verdict_hash = hashlib.sha256(
-        hash_input.encode()
-    ).hexdigest()
-
-    # Create VerdictEvent object
-    verdict_event = VerdictEvent(
-        rule_id=rule.id,
-        rule_name=rule.rule_name,
-        verdict=verdict,
-        event_data=event_json,
-        verdict_hash=verdict_hash
-    )
-
-    # Save to database
-    db.add(verdict_event)
-    db.commit()
-
-    # Return response
-    return {
-        "rule_id": rule.id,
-        "rule_name": rule.rule_name,
-        "verdict": verdict
-    }
+    return result

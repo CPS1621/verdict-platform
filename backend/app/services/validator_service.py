@@ -9,15 +9,32 @@ def validate_rule(rule_query: str, event: dict):
 
     detection = json.loads(rule_query)
 
-    selection = detection.get("detection", {}).get("selection", {})
+    # Support both formats:
+    # 1. {"detection":{"selection":{}}}
+    # 2. {"selection":{}}
+
+    if "detection" in detection:
+        selection = detection.get("detection", {}).get(
+            "selection",
+            {}
+        )
+    else:
+        selection = detection.get(
+            "selection",
+            {}
+        )
+
 
     matched_fields = []
 
     print("Selection:", selection)
+    print("Event:", event)
+
 
     for key, value in selection.items():
 
         event_value = event.get(key)
+
 
         if event_value is None:
             return {
@@ -27,7 +44,9 @@ def validate_rule(rule_query: str, event: dict):
                 "message": f"Field '{key}' is missing."
             }
 
+
         expected = value.replace("*", "").lower()
+
 
         if expected not in event_value.lower():
             return {
@@ -37,7 +56,9 @@ def validate_rule(rule_query: str, event: dict):
                 "message": f"Field '{key}' did not match."
             }
 
+
         matched_fields.append(key)
+
 
     return {
         "status": "Detected",
