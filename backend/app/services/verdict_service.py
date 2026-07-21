@@ -3,6 +3,7 @@ import json
 from sqlalchemy.orm import Session
 
 from app.models.verdict import Verdict
+from app.utils.hash_utils import generate_verdict_hash
 
 
 def save_verdict(
@@ -13,11 +14,19 @@ def save_verdict(
     event: dict
 ):
 
+    verdict_hash = generate_verdict_hash(
+        rule_id=rule_id,
+        rule_name=rule_name,
+        verdict=verdict,
+        event_data=event
+    )
+
     db_verdict = Verdict(
         rule_id=rule_id,
         rule_name=rule_name,
         verdict=verdict,
-        event_data=json.dumps(event)
+        event_data=json.dumps(event),
+        verdict_hash=verdict_hash
     )
 
     db.add(db_verdict)

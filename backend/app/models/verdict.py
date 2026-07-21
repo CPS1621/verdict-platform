@@ -17,6 +17,9 @@ class Verdict(Base):
 
     event_data = Column(Text, nullable=False)
 
+    # NEW COLUMN
+    verdict_hash = Column(String(64), nullable=False)
+
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now()
