@@ -24,3 +24,18 @@ def publish_verdict(verdict: dict):
             print(f"❌ Failed to publish verdict: {e}")
     else:
         print("⚠️ Kafka producer not initialized. Skipping publish.")
+
+def publish_corrected_verdict(verdict: dict):
+    """
+    Publish a corrected verdict event to Kafka.
+    """
+
+    if producer:
+        try:
+            producer.send("verdict-events", verdict)
+            producer.flush()
+            print("✅ Corrected verdict published to Kafka")
+        except KafkaError as e:
+            print(f"❌ Failed to publish corrected verdict: {e}")
+    else:
+        print("⚠️ Kafka producer not initialized.")

@@ -10,6 +10,12 @@ from app.services.verdict_service import (
     get_verdict_by_id,
     get_verdicts_by_rule as get_verdicts_by_rule_service,
 )
+from app.schemas.verdict_correction import (
+    VerdictCorrectionRequest,
+    VerdictCorrectionResponse,
+)
+
+from app.services.verdict_service import correct_verdict
 
 router = APIRouter()
 
@@ -54,3 +60,28 @@ def get_verdicts_by_rule(
         )
 
     return verdicts
+
+
+@router.put(
+    "/verdicts/{verdict_id}/correct",
+    response_model=VerdictCorrectionResponse
+)
+def correct_verdict_endpoint(
+    verdict_id: int,
+    request: VerdictCorrectionRequest,
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
+):
+    verdict = correct_verdict(
+        db=db,
+        verdict_id=verdict_id,
+        new_verdict=request.verdict
+    )
+
+    if not verdict:
+        raise HTTPException(
+            status_code=404,
+            detail="Verdict not found."
+        )
+
+    return verdict

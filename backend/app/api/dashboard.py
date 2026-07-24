@@ -4,7 +4,7 @@ from sqlalchemy import func
 
 from app.database.database import get_db
 from app.models.rule import Rule
-from app.models.verdict_event import VerdictEvent
+from app.models.verdict import Verdict
 from app.schemas.dashboard import DashboardStats
 
 router = APIRouter()
@@ -16,19 +16,19 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     total_rules = db.query(Rule).count()
 
     # Total verdicts
-    total_verdicts = db.query(VerdictEvent).count()
+    total_verdicts = db.query(Verdict).count()
 
     # Total detected
     detected = (
-        db.query(VerdictEvent)
-        .filter(VerdictEvent.verdict == "Detected")
+        db.query(Verdict)
+        .filter(Verdict.verdict == "Detected")
         .count()
     )
 
     # Total missed
     missed = (
-        db.query(VerdictEvent)
-        .filter(VerdictEvent.verdict == "Missed")
+        db.query(Verdict)
+        .filter(Verdict.verdict == "Missed")
         .count()
     )
 
