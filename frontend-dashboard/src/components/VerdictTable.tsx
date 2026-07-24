@@ -1,3 +1,5 @@
+import StatusBadge from "./StatusBadge";
+
 interface Verdict {
   id: number;
   rule_name: string;
@@ -45,21 +47,7 @@ function VerdictTable({ verdicts }: VerdictTableProps) {
             </td>
 
             <td style={{ border: "1px solid #ddd", padding: "10px" }}>
-              <span
-                style={{
-                  color:
-                    verdict.verdict === "Detected"
-                      ? "green"
-                      : verdict.verdict === "Missed"
-                      ? "red"
-                      : verdict.verdict === "Partial"
-                      ? "orange"
-                      : "gray",
-                  fontWeight: "bold",
-                }}
-              >
-                {verdict.verdict}
-              </span>
+              <StatusBadge verdict={verdict.verdict}/>
             </td>
 
             <td style={{ border: "1px solid #ddd", padding: "10px" }}>
