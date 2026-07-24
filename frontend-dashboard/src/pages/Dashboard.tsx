@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import VerdictTable from "../components/VerdictTable";
+import VerdictFilter from "../components/VerdictFilter";
+import Pagination from "../components/Pagination";
 
 interface Verdict {
   id: number;
@@ -13,6 +15,11 @@ interface Verdict {
 function Dashboard() {
   const [verdicts, setVerdicts] = useState<Verdict[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedStatus, setSelectedStatus] = useState("All");
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const verdictsPerPage = 10;
 
   const navigate = useNavigate();
 
@@ -30,7 +37,7 @@ function Dashboard() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("access_token");
     navigate("/");
   };
 
@@ -45,6 +52,23 @@ function Dashboard() {
   const partialCount = verdicts.filter(
     (v) => v.verdict === "Partial"
   ).length;
+
+  // Apply Filter
+  const filteredVerdicts =
+    selectedStatus === "All"
+      ? verdicts
+      : verdicts.filter((v) => v.verdict === selectedStatus);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredVerdicts.length / verdictsPerPage);
+
+  const indexOfLastVerdict = currentPage * verdictsPerPage;
+  const indexOfFirstVerdict = indexOfLastVerdict - verdictsPerPage;
+
+  const currentVerdicts = filteredVerdicts.slice(
+    indexOfFirstVerdict,
+    indexOfLastVerdict
+  );
 
   return (
     <div style={{ padding: "30px" }}>
@@ -61,6 +85,7 @@ function Dashboard() {
         Logout
       </button>
 
+      {/* Summary Cards */}
       <div
         style={{
           display: "flex",
@@ -124,10 +149,26 @@ function Dashboard() {
 
       <h2>Verdicts</h2>
 
+      <VerdictFilter
+        selectedStatus={selectedStatus}
+        onStatusChange={(status) => {
+          setSelectedStatus(status);
+          setCurrentPage(1); // Reset to first page when filter changes
+        }}
+      />
+
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <VerdictTable verdicts={verdicts} />
+        <>
+          <VerdictTable verdicts={currentVerdicts} />
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
     </div>
   );
