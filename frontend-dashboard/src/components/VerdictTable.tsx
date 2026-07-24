@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
 
 interface Verdict {
@@ -12,6 +13,8 @@ interface VerdictTableProps {
 }
 
 function VerdictTable({ verdicts }: VerdictTableProps) {
+    const navigate = useNavigate();
+
   return (
     <table
       style={{
@@ -37,7 +40,13 @@ function VerdictTable({ verdicts }: VerdictTableProps) {
 
       <tbody>
         {verdicts.map((verdict) => (
-          <tr key={verdict.id}>
+          <tr
+            key={verdict.id}
+            onClick={() => navigate(`/verdicts/${verdict.id}`)}
+            style={{
+              cursor: "pointer",
+            }}
+          >
             <td style={{ border: "1px solid #ddd", padding: "10px" }}>
               {verdict.id}
             </td>
