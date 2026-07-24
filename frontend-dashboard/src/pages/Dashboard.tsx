@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import VerdictTable from "../components/VerdictTable";
 
 interface Verdict {
   id: number;
@@ -60,7 +61,6 @@ function Dashboard() {
         Logout
       </button>
 
-      {/* Summary Cards */}
       <div
         style={{
           display: "flex",
@@ -127,66 +127,7 @@ function Dashboard() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: "20px",
-          }}
-        >
-          <thead>
-            <tr>
-              <th style={{ border: "1px solid #ddd", padding: "12px" }}>
-                ID
-              </th>
-              <th style={{ border: "1px solid #ddd", padding: "12px" }}>
-                Rule Name
-              </th>
-              <th style={{ border: "1px solid #ddd", padding: "12px" }}>
-                Verdict
-              </th>
-              <th style={{ border: "1px solid #ddd", padding: "12px" }}>
-                Created At
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {verdicts.map((verdict) => (
-              <tr key={verdict.id}>
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
-                  {verdict.id}
-                </td>
-
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
-                  {verdict.rule_name}
-                </td>
-
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
-                  <span
-                    style={{
-                      color:
-                        verdict.verdict === "Detected"
-                          ? "green"
-                          : verdict.verdict === "Missed"
-                          ? "red"
-                          : verdict.verdict === "Partial"
-                          ? "orange"
-                          : "gray",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {verdict.verdict}
-                  </span>
-                </td>
-
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
-                  {new Date(verdict.created_at).toLocaleString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <VerdictTable verdicts={verdicts} />
       )}
     </div>
   );
